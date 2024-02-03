@@ -14,7 +14,7 @@ def print_verbose(*args, verbose=False, **kwargs):
         if verbose:
             print(*args, **kwargs)
             
-   
+             
 class Card:
     """Represents a single playing card."""
 
@@ -36,13 +36,28 @@ class Card:
             return int(self.rank)
 
 
+class Counter:
+    def __init__(self):
+        self.count = 0
+
+    def update_count(self, card): # Hi-Lo Counting
+        # Update count based on the card
+        if card.rank in ['2', '3', '4', '5', '6']:
+            self.count += 1
+        elif card.rank in ['10', 'Jack', 'Queen', 'King', 'Ace']:
+            self.count -= 1
+
+    def reset_count(self):
+        self.count = 0
+      
+        
 class Deck:
     """Represents a deck of playing cards."""
 
     SUITS = ["Spades", "Hearts", "Diamonds", "Clubs"]
     RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"]
 
-    def __init__(self, num_decks=6):
+    def __init__(self, num_decks=6): # Create a list of Card object to shape the required Deck
         self.cards = []
         for _ in range(num_decks):
             for suit in self.SUITS:
@@ -50,6 +65,8 @@ class Deck:
                     self.cards.append(Card(suit, rank))
                     
         self.initial_total_deck_value = sum(card.blackjack_value() for card in self.cards)
+        self.initial_total_deck_cards = len(self.cards)
+        self.counter = Counter()
 
     def shuffle(self):
         """Shuffles the deck of cards."""
@@ -59,7 +76,12 @@ class Deck:
         """Deals a card from the top of the deck."""
         if not self.cards:
             raise IndexError("Deck is empty")
-        return self.cards.pop()
+        
+        dealt_card = self.cards.pop() # Deal the last card from Deck
+        
+        # Keep the Count of dealt cards
+        self.counter.update_count(dealt_card)
+        return dealt_card
 
     def total_deck_value(self):
         """Returns the total blackjack value of all cards in the deck."""
@@ -148,7 +170,7 @@ class Player:
 
     def place_bet(self):
         """Places a bet on specific hand based on the player's strategy."""
-        bet_amount = self.strategy.determine_bet(self.budget, self.game)
+        bet_amount = self.strategy.determine_bet(self.game, self.budget)
         
         # Player has decided to play in this round
         if bet_amount:
@@ -157,7 +179,7 @@ class Player:
     
     def make_decision(self, hand):
         """Makes a decision based on the player's strategy."""
-        decision = self.strategy.decide(hand, self.game.dealer.hand.cards[0], self.budget) # Tuple ('hit', 'R3')
+        decision = self.strategy.decide(hand, self.game, self.budget) # Tuple ('hit', 'R3')
         return decision
     
     def double_down(self, hand):
@@ -269,7 +291,14 @@ def round_info_decorator(start_game_func):
                 'cards': [str(card) for card in self.dealer.hand.cards],
                 'value': self.dealer.hand.get_value(),
                 'is_bust': self.dealer.hand.is_bust(),
-            }
+            },
+            
+            'deck': {
+                'cards_remaining': len(self.deck.cards),
+                'cards_total_value': self.deck.total_deck_value(),
+                'cards_running_count': self.deck.counter.count,
+                'cards_true_count': math.floor(self.deck.counter.count/5),
+            }      
         }
 
         self.round_info_list.append(round_info)
@@ -331,8 +360,8 @@ class Game:
             player.reset_hand()
         self.dealer.reset_hand()
         
-        # Check the Decks status
-        if self.deck.total_deck_value() < 0.8 * self.deck.initial_total_deck_value:
+        # Check the Decks status       
+        if len(self.deck.cards) < random.uniform(0.7, 0.9) * self.deck.initial_total_deck_cards: # 70% or more decks remaining then reset Deck
             self.deck = Deck() # Renew the whole deck
             
         # Shuffle the deck
@@ -475,15 +504,16 @@ class Game:
         
     def export_game(self):
         # Plater, Convert round_info_list to a DataFrame
-        df_player = json_normalize(self.round_info_list, ['players', 'hands'], max_level=3, meta=['round number', ['players', 'name'], 
-                                                                                          ['players', 'budget']])
+        df_player = json_normalize(self.round_info_list, ['players', 'hands'], max_level=3, 
+                                   meta=['round number', ['players', 'name'], 
+                                         ['players', 'budget']])
         
         # Dealer, Convert round_info_list to a DataFrame
-        df_dealer = json_normalize(self.round_info_list)
-        df_dealer.drop(['players'], axis=1, inplace=True)
+        df_dealer_and_cards = json_normalize(self.round_info_list)
+        df_dealer_and_cards.drop(['players'], axis=1, inplace=True)
         
         # Join the two daraframes
-        df = df_player.merge(df_dealer, on='round number', how='left')
+        df = df_player.merge(df_dealer_and_cards, on='round number', how='left')
         df = df.rename(columns=lambda x: x.split('.')[-1])  # Remove prefix from column names
         
         df.plot.line(x='round number', y='budget')
@@ -499,10 +529,10 @@ class BasicStrategy:
     """Implements a basic blackjack strategy.
         Use self.decision_rule for any return, so that it's possible to trace the rules. 
     """
-    def __init__(self):
+    def __init__(self, with_card_counting=False, accuracy=1.0):
        self.decision_rule = None # Keep decision_rule to analyze later
         
-    def determine_bet(self, budget, game):
+    def determine_bet(self, game, budget):
         """Returns a bet amount or None which means that player is not playing in this round."""
         # Calculate % of the budget
         risk_amount = budget * 0.05
@@ -513,11 +543,11 @@ class BasicStrategy:
             return int(bet_amount)
         
     @decision_modifier_decorator
-    def decide(self, player_hand, dealer_up_card, budget):
+    def decide(self, player_hand, game, budget):
         """Decides based on basic strategy rules."""   
-        
+        print(math.floor(game.deck.counter.count/5.0))
         player_hand_value = player_hand.get_value()
-        dealer_card_value = dealer_up_card.blackjack_value()
+        dealer_card_value = game.dealer.hand.cards[0].blackjack_value()
            
         # Double down 
         if player_hand_value == 9 and dealer_card_value >= 3 and dealer_card_value <= 6 and budget >= player_hand.bet:
@@ -544,7 +574,7 @@ class BasicStrategy:
             ):
                 self.decision_rule = 'R6'
                 return "split"
-            elif dealer_up_card.blackjack_value() in (2, 3, 7, 8, 9, 10):  # Don't split against strong dealer cards
+            elif dealer_card_value in (2, 3, 7, 8, 9, 10):  # Don't split against strong dealer cards
                 self.decision_rule = 'R7'
                 return "stand"
             else:  # Split other pairs based on dealer card
@@ -559,11 +589,11 @@ class BasicStrategy:
 class NewStartegy_1(BasicStrategy):
 
     @decision_modifier_decorator
-    def decide(self, player_hand, dealer_up_card, budget):
+    def decide(self, player_hand, game, budget):
         """Decides based on basic strategy rules."""   
         
         player_hand_value = player_hand.get_value()
-        dealer_card_value = dealer_up_card.blackjack_value()
+        dealer_card_value = game.dealer.hand.cards[0].blackjack_value()
            
         # Double down 
         if player_hand_value == 9 and dealer_card_value >= 3 and dealer_card_value <= 6 and budget >= player_hand.bet:
@@ -587,7 +617,7 @@ class NewStartegy_1(BasicStrategy):
             ):
                 self.decision_rule = 'R6'
                 return "split"
-            elif dealer_up_card.blackjack_value() in (2, 3, 7, 8, 9, 10):  # Don't split against strong dealer cards
+            elif dealer_card_value in (2, 3, 7, 8, 9, 10):  # Don't split against strong dealer cards
                 self.decision_rule = 'R7'
                 return "stand"
             else:  # Split other pairs based on dealer card
@@ -602,7 +632,7 @@ class NewStartegy_1(BasicStrategy):
 #%%
 
 # Create a player with a budget of $100 and using the basic strategy
-ardeshir = Player(name="Ardeshir", budget=300, strategy=NewStartegy_1())
+ardeshir = Player(name="Ardeshir", budget=300, strategy=BasicStrategy())
 # parisa = Player(name="Parisa", budget=100, strategy=BasicStrategy())
 
 # Create a game with the player
@@ -610,7 +640,6 @@ game = Game(players=[ardeshir])
 
 # Start simulation of the game
 result = game.run_simulation(200)
-print(result)
 
 game.export_game()
 
