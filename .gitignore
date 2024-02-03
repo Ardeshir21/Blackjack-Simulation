@@ -1,0 +1,20 @@
+*.log
+*.pot
+*.pyc
+log_scraper.txt
+log_crontab.txt
+__pycache__/
+letsencrypt/
+media/
+migrations/
+venv
+staticfiles
+/static
+/General Documents
+/Production Env
+.env
+.vs
+db.sqlite3
+*.xlsx
+Bard.txt
+untitled0.py

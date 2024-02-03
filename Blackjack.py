@@ -4,6 +4,7 @@ Created on Fri Jan 19 17:00:39 2024
 
 @author: Ardeshir
 """
+#%%
 import random
 import math
 from pandas import json_normalize
@@ -13,7 +14,7 @@ def print_verbose(*args, verbose=False, **kwargs):
         if verbose:
             print(*args, **kwargs)
             
-            
+   
 class Card:
     """Represents a single playing card."""
 
@@ -63,7 +64,7 @@ class Deck:
     def total_deck_value(self):
         """Returns the total blackjack value of all cards in the deck."""
         return sum(card.blackjack_value() for card in self.cards)
-
+    
 
 class Hand:
    """Represents a hand of playing cards."""
