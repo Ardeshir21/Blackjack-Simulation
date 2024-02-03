@@ -16,5 +16,4 @@ staticfiles
 .vs
 db.sqlite3
 *.xlsx
-Bard.txt
-untitled0.py
+/Test Codes
