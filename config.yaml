@@ -1,0 +1,37 @@
+# Game Configuration
+game:
+  minimum_bet: 10
+  num_decks: 6
+
+# Simulation Settings
+simulation:
+  num_rounds: 50
+  verbose: false
+  output_dir: "results"
+
+# Player Configurations
+players:
+  - name: "Basic Player"
+    strategy: "BasicStrategy"
+    initial_budget: 1000
+    
+  - name: "Aggressive Player"
+    strategy: "AggressiveStrategy"
+    initial_budget: 1000
+    
+  - name: "Conservative Player"
+    strategy: "ConservativeStrategy"
+    initial_budget: 1000
+
+# Strategy Parameters
+strategies:
+  BasicStrategy:
+    description: "Standard blackjack strategy"
+    
+  AggressiveStrategy:
+    description: "High-risk high-reward strategy"
+    max_bet_percentage: 0.25  # Maximum bet as percentage of budget
+    
+  ConservativeStrategy:
+    description: "Risk-averse strategy"
+    min_budget_threshold: 20  # Minimum budget multiplier for betting 
