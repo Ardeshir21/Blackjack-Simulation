@@ -1,29 +1,36 @@
-blackjack/
+blackjack-simulator/
 ├── src/
-│   ├── __init__.py
 │   ├── game/
 │   │   ├── __init__.py
-│   │   ├── card.py
-│   │   ├── deck.py
-│   │   ├── player.py
-│   │   └── blackjack.py
+│   │   ├── blackjack.py      # Main game controller and CLI
+│   │   ├── card.py           # Card representation
+│   │   ├── dealer.py         # Dealer logic
+│   │   ├── deck.py           # Deck management
+│   │   ├── hand.py           # Hand representation
+│   │   └── player.py         # Player logic
+│   │
 │   ├── strategies/
 │   │   ├── __init__.py
-│   │   ├── base_strategy.py
-│   │   ├── basic_strategy.py
-│   │   ├── card_counting.py
-│   │   └── optimal_strategy.py
-│   └── analysis/
-│       ├── __init__.py
-│       ├── simulator.py
-│       └── statistics.py
-├── tests/
-│   ├── __init__.py
-│   ├── test_game.py
-│   ├── test_strategies.py
-│   └── test_analysis.py
-├── notebooks/
-│   └── strategy_analysis.ipynb
-├── requirements.txt
-├── setup.py
-└── README.md 
+│   │   ├── base_strategy.py      # Abstract base class for strategies
+│   │   ├── basic_strategy.py     # Standard blackjack strategy
+│   │   ├── aggressive_strategy.py # High-risk strategy
+│   │   └── conservative_strategy.py # Low-risk strategy
+│   │
+│   ├── analysis/
+│   │   ├── __init__.py
+│   │   └── statistics.py      # Analytics and reporting
+│   │
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   └── decorators.py      # Game state tracking decorators
+│   │
+│   └── __init__.py
+│
+├── config.yaml                # Simulation configuration
+├── pyproject.toml            # Project metadata and dependencies
+├── README.md                 # Project documentation
+├── .gitignore               # Git ignore rules
+└── results/                 # Generated reports (gitignored)
+    ├── round_info.xlsx      # Detailed game data
+    ├── budget_history.png   # Budget visualization
+    └── summary_report.txt   # Strategy comparison 
