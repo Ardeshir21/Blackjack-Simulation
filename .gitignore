@@ -43,6 +43,17 @@ results/
 *.log
 *.json
 db.sqlite3
+log_scraper.txt
+log_crontab.txt
+letsencrypt/
+media/
+migrations/
+staticfiles/
+static/
+General Documents/
+Production Env/
+Test Codes/
+Read More/
 
 # OS specific
 .DS_Store
@@ -91,16 +102,3 @@ wheels/
 
 *.pot
 *.pyc
-log_scraper.txt
-log_crontab.txt
-letsencrypt/
-media/
-migrations/
-staticfiles
-/static
-/General Documents
-/Production Env
-.vs
-*.xlsx
-/Test Codes
-/Read More/
