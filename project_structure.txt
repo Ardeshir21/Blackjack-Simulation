@@ -1,0 +1,29 @@
+blackjack/
+├── src/
+│   ├── __init__.py
+│   ├── game/
+│   │   ├── __init__.py
+│   │   ├── card.py
+│   │   ├── deck.py
+│   │   ├── player.py
+│   │   └── blackjack.py
+│   ├── strategies/
+│   │   ├── __init__.py
+│   │   ├── base_strategy.py
+│   │   ├── basic_strategy.py
+│   │   ├── card_counting.py
+│   │   └── optimal_strategy.py
+│   └── analysis/
+│       ├── __init__.py
+│       ├── simulator.py
+│       └── statistics.py
+├── tests/
+│   ├── __init__.py
+│   ├── test_game.py
+│   ├── test_strategies.py
+│   └── test_analysis.py
+├── notebooks/
+│   └── strategy_analysis.ipynb
+├── requirements.txt
+├── setup.py
+└── README.md 
